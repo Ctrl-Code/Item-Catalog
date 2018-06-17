@@ -1,0 +1,10 @@
+<html>
+    <body>
+        <h3>Product Description:</h3><hr>
+        {% for i in product %}
+        {{ i.pdescription }}
+        {% endfor %}
+        <hr>
+        edit | delete | <a href="{{url_for('index')}}">Home</a>
+    </body>
+</html>

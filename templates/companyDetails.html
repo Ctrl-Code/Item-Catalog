@@ -1,0 +1,9 @@
+<html>
+    <body>
+        <h3>Displaying details for '{{name}}' Company</h3>
+        {% for i in res %}
+        <a href="{{url_for('productDetails',aa=a,bb=b,pid=i.id)}}">{{ i.pname }}</a>
+        <br>
+        {% endfor %}
+    </body>
+</html>
