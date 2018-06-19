@@ -11,6 +11,13 @@ class Company(Base):
     id = Column(Integer, primary_key=True)
     cname = Column(String(50), nullable=False,)
 
+    @property
+    def serialize(self):
+        return {
+            'Id': self.id,
+            'Company': self.cname,
+        }
+
 
 class Product(Base):
     __tablename__ = 'prod'
@@ -19,6 +26,15 @@ class Product(Base):
     pdescription = Column(String(150))
     comp = relationship(Company)
     pc = Column(Integer, ForeignKey('comp.id'))
+
+    @property
+    def serialize(self):
+        return {
+            'Id': self.id,
+            'Product': self.pname,
+            'Product Description': self.pdescription,
+            'Product Company': self.pc
+        }
 
 
 engine = create_engine('postgresql+psycopg2://abc:cba@localhost/mazak')

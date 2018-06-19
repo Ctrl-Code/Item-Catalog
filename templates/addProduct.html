@@ -1,0 +1,17 @@
+<html>
+    <body>
+        <form action="{{url_for('addProduct')}}" method="POSt">
+            Choose from the Companies:<br>
+            <select name="CId">
+                {% for c in company %}
+                <option value="{{ c.id }}">{{ c.cname }}</option>
+                {% endfor %}
+            </select><br>
+            Enter the Product Name:<br>
+            <input name="newPName" type="text"><br>
+            Enter the Product Description:<br>
+            <input name="newPDescription" type="text"><br>
+            <input name="Submit" type="submit">
+        </form>
+    </body>
+</html>

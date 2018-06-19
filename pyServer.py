@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, desc
 from sqlalchemy import join, select
 from sqlalchemy.orm import sessionmaker
@@ -18,13 +18,21 @@ def index():
     product = session.query(Product).order_by(desc(Product.id)).limit(7)
     return render_template("index.html", company=company, product=product)
 
-# @app.route("/index/createCompany")
-# def createCompany():
-#     return render_template("createCompany.html")
-
-# @app.route("/index/createProduct/")
-# def createProduct():
-#     return render_template("createProduct.html")
+@app.route("/catalog/addProduct", methods=['POST','GET'])
+def addProduct():
+    if request.method == 'POST':
+        newCompanyName = request.form['CId']
+        newProductName = request.form['newPName']
+        newProductDescription = request.form['newPDescription']
+        Product_0 = Product(pname = newProductName,
+                            pdescription = newProductDescription,
+                            pc = newCompanyName)
+        session.add(Product_0)
+        session.commit()
+        return redirect(url_for('index'))
+    else:
+        company = session.query(Company).all()
+        return render_template("addProduct.html", company=company)
 
 # @app.route("/index/createCompany/data", methods=['POST'])
 # def createEntry():
@@ -67,7 +75,12 @@ def showProduct(cname,pname):
     product = session.query(Product).filter_by(pname = pname).all()
     return render_template('showProduct.html',product=product)
 
+@app.route("/json")
+def showJSON():
+    product = session.query(Product).all()
+    return jsonify(Product=[i.serialize for i in product])
+
 if __name__ == '__main__':
-    print("Running Personalized Server by Cheetah")
+    print("Running Personalized Server, exclusively for Cheetah")
     app.debug = True
     app.run(host='0.0.0.0', port=8001)
