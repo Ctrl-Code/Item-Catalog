@@ -3,10 +3,10 @@
         <h3>Product Description:</h3><hr>
         {% for i in product %}
         {{ i.pdescription }}
-        {% endfor %}
         <hr>
-        edit | 
-        delete | 
+        edit |
+        <a href="{{url_for('deleteProduct',pname=i.pname,pid=i.id)}}">delete</a> | 
         <a href="{{url_for('index')}}">Home</a>
+        {% endfor %}
     </body>
 </html>

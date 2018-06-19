@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, desc
-from sqlalchemy import join, select
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from dbSetup import Base, Company, Product
 
@@ -34,34 +34,6 @@ def addProduct():
         company = session.query(Company).all()
         return render_template("addProduct.html", company=company)
 
-# @app.route("/index/createCompany/data", methods=['POST'])
-# def createEntry():
-#     if request.method == 'POST':
-#         company = session.query(Company).all()
-#         # status = 1 indicates that a new entry is added
-#         status = 1
-#         var = request.form['cname']
-#         for i in company:
-#             if var == i.cname:
-#                 status = 0
-#                 break
-#             else:
-#                 continue
-#         if status == 1:
-#             Company_x = Company(cname = request.form['cname'])
-#             session.add(Company_x)
-#             session.commit()
-#             Product_x = Product(pname = request.form['pname'],
-#                 pdescription = request.form['pdescription'],
-#                 pc = Company_x.id)
-#             session.add(Product_x)
-#             session.commit()
-#             company = session.query(Company).all()
-#             product = session.query(Product).all()
-#             return render_template("index.html", company=company, product=product)
-#         else:
-#             return "Sorry but this Company already exists.\nChoose a new name."
-
 @app.route("/catalog/<com>/items")
 def showCompany(com):
     company = session.query(Company).all()
@@ -71,9 +43,17 @@ def showCompany(com):
 
 @app.route("/catalog/<cname>/<pname>")
 def showProduct(cname,pname):
-    del cname
     product = session.query(Product).filter_by(pname = pname).all()
+    del cname, pname
     return render_template('showProduct.html',product=product)
+
+@app.route("/catalog/<pname>_<pid>/Delete")
+def deleteProduct(pname,pid):
+    del pname
+    product = session.query(Product).filter_by(id = pid).one()
+    session.delete(product)
+    session.commit()
+    return redirect(url_for('index'))
 
 @app.route("/json")
 def showJSON():
@@ -81,6 +61,6 @@ def showJSON():
     return jsonify(Product=[i.serialize for i in product])
 
 if __name__ == '__main__':
-    print("Running Personalized Server, exclusively for Cheetah")
+    print("Running Personalized Server, exclusively for CTRL-CODE")
     app.debug = True
     app.run(host='0.0.0.0', port=8001)
