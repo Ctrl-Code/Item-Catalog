@@ -2,10 +2,9 @@
     <body>
         <h2>Categories</h2>
         {% for c in company %}
-        <a href="{{url_for('showCompany',com=c.cname)}}">{{ c.cname }}</a>
-        <br>
-        {% endfor %}
-        <br>
+        <a href="{{url_for('showCompany',com=c.cname)}}">{{ c.cname }}</a><br>
+        {% endfor %}<br>
+        <a href="{{url_for('showJSON')}}">JSON File</a><br>
         <a href="{{url_for('addProduct')}}">Add Product</a>
         <h2>Latest Products</h2>
         {% for p in product %} 

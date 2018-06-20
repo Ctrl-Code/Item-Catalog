@@ -76,8 +76,9 @@ def editProduct(pname,pid):
 
 @app.route("/json")
 def showJSON():
+    company = session.query(Company).all()
     product = session.query(Product).all()
-    return jsonify(Product=[i.serialize for i in product])
+    return jsonify(Company=[i.serialize for i in company], Product=[i.serialize for i in product])
 
 if __name__ == '__main__':
     print("Running Personalized Server, exclusively for CTRL-CODE")
