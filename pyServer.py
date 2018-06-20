@@ -18,7 +18,7 @@ def index():
     product = session.query(Product).order_by(desc(Product.id)).limit(7)
     return render_template("index.html", company=company, product=product)
 
-@app.route("/catalog/addProduct", methods=['POST','GET'])
+@app.route("/catalog/addProduct", methods=['GET','POST'])
 def addProduct():
     if request.method == 'POST':
         newCompanyName = request.form['CId']
@@ -54,6 +54,25 @@ def deleteProduct(pname,pid):
     session.delete(product)
     session.commit()
     return redirect(url_for('index'))
+
+@app.route("/catalog/<pname>_<pid>/Edit", methods=['GET','POST'])
+def editProduct(pname,pid):
+    if request.method == 'GET':
+        product = session.query(Product).filter_by(id = pid).all()
+        return render_template('editProduct.html',product=product)
+    else:
+        product = session.query(Product).filter_by(id = pid).one()
+        newProductName = request.form['editedPName']
+        newProductDescription = request.form['editedPDescription']
+        newProductPC = product.pc
+        session.delete(product)
+        session.commit()
+        product = Product(pname=newProductName,
+                          pdescription=newProductDescription,
+                          pc=newProductPC)
+        session.add(product)
+        session.commit()
+        return redirect(url_for('index'))
 
 @app.route("/json")
 def showJSON():

@@ -4,7 +4,7 @@
         {% for i in product %}
         {{ i.pdescription }}
         <hr>
-        edit |
+        <a href="{{url_for('editProduct',pname=i.pname,pid=i.id)}}">edit</a> |
         <a href="{{url_for('deleteProduct',pname=i.pname,pid=i.id)}}">delete</a> | 
         <a href="{{url_for('index')}}">Home</a>
         {% endfor %}
