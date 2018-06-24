@@ -1,5 +1,14 @@
 <html>
     <body>
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                {% for message in messages %}
+                <li><strong>{{ message }}</strong></li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            {% endwith %}
         <h2>Categories</h2>
         {% for c in company %}
         <a href="{{url_for('showCompany',com=c.cname)}}">{{ c.cname }}</a><br>

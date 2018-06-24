@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 from sqlalchemy import create_engine, desc
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
@@ -53,6 +53,7 @@ def deleteProduct(pname,pid):
     product = session.query(Product).filter_by(id = pid).one()
     session.delete(product)
     session.commit()
+    flash("Deleted Successful!!!")
     return redirect(url_for('index'))
 
 @app.route("/catalog/<pname>_<pid>/Edit", methods=['GET','POST'])
@@ -72,6 +73,7 @@ def editProduct(pname,pid):
                           pc=newProductPC)
         session.add(product)
         session.commit()
+        flash("Edited Successfully")
         return redirect(url_for('index'))
 
 @app.route("/json")
@@ -82,5 +84,7 @@ def showJSON():
 
 if __name__ == '__main__':
     print("Running Personalized Server, exclusively for CTRL-CODE")
+    # for flashing messages on screen, we are using secret_key
+    app.secret_key = "my_secret_key"
     app.debug = True
     app.run(host='0.0.0.0', port=8001)
