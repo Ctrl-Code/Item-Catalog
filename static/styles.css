@@ -1,0 +1,41 @@
+body{
+    background-color: darkgray;
+}
+
+a{
+    text-decoration:none;
+}
+
+.login-button{
+    height: 2em;
+    width: 5em;
+    margin-top: 1.6em;
+    margin-right: 5%;
+    background-color: orange;
+    text-decoration: white;
+}
+
+.top-bar-layout{
+    background-color: aqua;
+    display: grid;
+    grid-template-columns: 88% 12%;
+}
+
+.grid-layout{
+    display: grid;
+    grid-template-columns: 30% 70%;
+    background-color: blue;
+}
+
+.flex{
+    display: inline-block;
+    background-color:whitesmoke;
+    text-align: left;
+    padding-left: 20px;
+    margin: 5px 5px 5px 5px;
+    height: 300px;
+}
+
+.message-color{
+    text-decoration-color: chartreuse;
+}

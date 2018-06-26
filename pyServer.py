@@ -32,9 +32,12 @@ app = Flask(__name__)
 def index():
     company = session.query(Company).all()
     product = session.query(Product).order_by(desc(Product.id)).limit(7)
-    return render_template("index.html", company=company, product=product)
+    if 'username' not in login_session:
+        return render_template("publicIndex.html", company=company, product=product)
+    else:
+        return render_template("index.html", company=company, product=product)
 
-# Create anti-forgery state token
+# Creating anti-forgery state token
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -127,7 +130,7 @@ def gconnect():
     output += '<img src="'
     output += login_session['picture']
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % login_session['username'])
+    flash("Welcome %s!!!" % login_session['username'])
     print ("done!")
     return output
 
@@ -155,7 +158,8 @@ def gdisconnect():
         del login_session['picture']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
-        return response
+        flash("Logged Out!!!")
+        return redirect(url_for('index'))
     else:
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
@@ -188,24 +192,37 @@ def showCompany(com):
     company = session.query(Company).all()
     var = session.query(Company).filter_by(cname=com).first()
     product = session.query(Product).filter_by(pc=var.id).all()
-    return render_template('showCompany.html',company=company, product=product,name=com,count=len(product))
+    if 'username' not in login_session:
+        return render_template('publicShowCompany.html',company=company, product=product,name=com,count=len(product))
+    else:
+        return render_template('showCompany.html',company=company, product=product,name=com,count=len(product))
 
 @app.route("/catalog/<cname>/<pname>")
 def showProduct(cname,pname):
     product = session.query(Product).filter_by(pname = pname).all()
     del cname, pname
-    return render_template('showProduct.html',product=product)
+    if 'username' not in login_session:
+        return render_template('publicShowProduct.html',product=product)
+    else:
+        return render_template('showProduct.html',product=product)
 
 @app.route("/catalog/<pname>_<pid>/Delete")
 def deleteProduct(pname,pid):
     if 'username' not in login_session:
         return redirect('/login')
-    del pname
-    product = session.query(Product).filter_by(id = pid).one()
-    session.delete(product)
-    session.commit()
-    flash("Deleted Successful!!!")
-    return redirect(url_for('index'))
+    else:
+        del pname
+        product = session.query(Product).filter_by(id = pid).one()
+        user = session.query(User).filter_by(email=login_session['email']).one()
+        if product.user_id == user.id:
+            session.delete(product)
+            session.commit()
+            flash("Item Deleted!!!")
+            return redirect(url_for('index'))
+        else:
+            return '''<h1>Sorry %s you are not authorised to delete this Product.
+            </h1><h2>Note: You can only perform this action on the Products you have
+            added.</h2>''' % login_session['username']
 
 @app.route("/catalog/<pname>_<pid>/Edit", methods=['GET','POST'])
 def editProduct(pname,pid):
@@ -213,7 +230,14 @@ def editProduct(pname,pid):
         return redirect('/login')
     if request.method == 'GET':
         product = session.query(Product).filter_by(id = pid).all()
-        return render_template('editProduct.html',product=product)
+        user = session.query(User).filter_by(email=login_session['email']).one()
+        for i in product:
+            if i.user_id == user.id:
+                return render_template('editProduct.html',product=product)
+            else:
+                return '''<h1>Sorry %s you are not authorised to edit the details of this Product.
+                </h1><h2>Note: You can only perform this action only on the Products you have
+                added.</h2>''' % login_session['username']
     else:
         product = session.query(Product).filter_by(id = pid).one()
         ProductName = request.form['editedPName']
@@ -228,7 +252,7 @@ def editProduct(pname,pid):
                           user_id=ProductUserId)
         session.add(product)
         session.commit()
-        flash("Edited Successfully")
+        flash("Item Edited!!!")
         return redirect(url_for('index'))
 
 @app.route("/json")

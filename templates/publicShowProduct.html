@@ -6,7 +6,7 @@
     <body>
         <div class="top-bar-layout">
             <h1>Mobile Phone Catalog</h1>
-            <a href="{{url_for('gdisconnect')}}"><button class="login-button">Log Out</button></a>
+            <a href="{{url_for('showLogin')}}"><button class="login-button">Log In</button></a>
         </div>
         <div class="grid-layout">
             <div class="flex"></div>
@@ -15,8 +15,6 @@
                 {% for i in product %}
                 {{ i.pdescription }}
                 <hr>
-                <a href="{{url_for('editProduct',pname=i.pname,pid=i.id)}}">edit</a> |
-                <a href="{{url_for('deleteProduct',pname=i.pname,pid=i.id)}}">delete</a> | 
                 <a href="{{url_for('index')}}">Home</a>
                 {% endfor %}
             </div>
