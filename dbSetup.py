@@ -5,11 +5,21 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 
+class User(Base):
+    __tablename__ = 'user'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False)
+    email = Column(String(50), nullable=False)
+    picture = Column(String(250))
 
 class Company(Base):
     __tablename__ = 'comp'
+
     id = Column(Integer, primary_key=True)
     cname = Column(String(50), nullable=False,)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User)
 
     @property
     def serialize(self):
@@ -21,11 +31,14 @@ class Company(Base):
 
 class Product(Base):
     __tablename__ = 'prod'
+
     id = Column(Integer, primary_key=True)
     pname = Column(String(50), nullable=False)
     pdescription = Column(String(150))
     comp = relationship(Company)
     pc = Column(Integer, ForeignKey('comp.id'))
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User)
 
     @property
     def serialize(self):

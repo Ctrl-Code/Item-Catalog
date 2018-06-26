@@ -7,7 +7,7 @@ import random, string
 from sqlalchemy import create_engine, desc
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
-from dbSetup import Base, Company, Product
+from dbSetup import Base, Company, Product, User
 
 # for creating oauth2 login
 from oauth2client.client import flow_from_clientsecrets
@@ -115,6 +115,11 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
+    user_id = getUserID(login_session['email'])
+    if user_id == None:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
+    
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -159,11 +164,16 @@ def gdisconnect():
 
 @app.route("/catalog/addProduct", methods=['GET','POST'])
 def addProduct():
+    if 'username' not in login_session:
+        return redirect('/login')
     if request.method == 'POST':
         newCompanyName = request.form['CId']
         newProductName = request.form['newPName']
         newProductDescription = request.form['newPDescription']
-        Product_0 = Product(pname = newProductName,
+        user_id = login_session['user_id']
+        print(user_id)
+        Product_0 = Product(user_id = user_id,
+                            pname = newProductName,
                             pdescription = newProductDescription,
                             pc = newCompanyName)
         session.add(Product_0)
@@ -188,6 +198,8 @@ def showProduct(cname,pname):
 
 @app.route("/catalog/<pname>_<pid>/Delete")
 def deleteProduct(pname,pid):
+    if 'username' not in login_session:
+        return redirect('/login')
     del pname
     product = session.query(Product).filter_by(id = pid).one()
     session.delete(product)
@@ -197,19 +209,23 @@ def deleteProduct(pname,pid):
 
 @app.route("/catalog/<pname>_<pid>/Edit", methods=['GET','POST'])
 def editProduct(pname,pid):
+    if 'username' not in login_session:
+        return redirect('/login')
     if request.method == 'GET':
         product = session.query(Product).filter_by(id = pid).all()
         return render_template('editProduct.html',product=product)
     else:
         product = session.query(Product).filter_by(id = pid).one()
-        newProductName = request.form['editedPName']
-        newProductDescription = request.form['editedPDescription']
-        newProductPC = product.pc
+        ProductName = request.form['editedPName']
+        ProductDescription = request.form['editedPDescription']
+        ProductPC = product.pc
+        ProductUserId = product.user_id
         session.delete(product)
         session.commit()
-        product = Product(pname=newProductName,
-                          pdescription=newProductDescription,
-                          pc=newProductPC)
+        product = Product(pname=ProductName,
+                          pdescription=ProductDescription,
+                          pc=ProductPC,
+                          user_id=ProductUserId)
         session.add(product)
         session.commit()
         flash("Edited Successfully")
@@ -220,6 +236,29 @@ def showJSON():
     company = session.query(Company).all()
     product = session.query(Product).all()
     return jsonify(Company=[i.serialize for i in company], Product=[i.serialize for i in product])
+
+# User Helper Functions ie createUser, getUserInfo, getUserID
+
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
 
 if __name__ == '__main__':
     print("Running Personalized Server, exclusively for CTRL-CODE")
