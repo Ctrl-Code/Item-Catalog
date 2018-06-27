@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import flash
 
 # for creating anti-forgery state tokens
 from flask import session as login_session
-import random, string
+import random
+import string
 
 from sqlalchemy import create_engine, desc
 from sqlalchemy import select
@@ -18,7 +20,7 @@ from flask import make_response
 import requests
 
 CLIENT_ID = json.loads(
-    open('client_secrets.json','r').read())['web']['client_id']
+    open('client_secrets.json', 'r').read())['web']['client_id']
 
 engine = create_engine('postgresql+psycopg2://abc:cba@localhost/mazak')
 Base.metadata.bind = engine
@@ -27,15 +29,18 @@ session = DBSession()
 
 app = Flask(__name__)
 
+
 @app.route("/")
 @app.route("/index")
 def index():
     company = session.query(Company).all()
     product = session.query(Product).order_by(desc(Product.id)).limit(7)
     if 'username' not in login_session:
-        return render_template("publicIndex.html", company=company, product=product)
+        return render_template("publicIndex.html", company=company,
+                               product=product)
     else:
         return render_template("index.html", company=company, product=product)
+
 
 # Creating anti-forgery state token
 @app.route('/login')
@@ -45,6 +50,7 @@ def showLogin():
     # login_session below is a dictionary
     login_session['state'] = state
     return render_template('login.html', STATE=state)
+
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -98,8 +104,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(json.dumps('''Current user is already
+                                            connected.'''), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -119,33 +125,37 @@ def gconnect():
     login_session['email'] = data['email']
 
     user_id = getUserID(login_session['email'])
-    if user_id == None:
+    if user_id is None:
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
-    
+
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ''' " style = "width: 300px; height: 300px;border-radius: 150px;
+              -webkit-border-radius: 150px;-moz-border-radius: 150px;">'''
     flash("Welcome %s!!!" % login_session['username'])
     print ("done!")
     return output
+
 
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
     if access_token is None:
         print ('Access Token is None')
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(json.dumps('Current user not connected.'),
+                                 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     print ('In gdisconnect access token is %s', access_token)
     print ('User name is: ')
     print (login_session['username'])
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = ('https://accounts.google.com/o/oauth2/revoke?token=%s'
+           % login_session['access_token'])
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print ('result is ')
@@ -161,12 +171,13 @@ def gdisconnect():
         flash("Logged Out!!!")
         return redirect(url_for('index'))
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(json.dumps('''Failed to revoke token for
+                                            given user.''', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
 
-@app.route("/catalog/addProduct", methods=['GET','POST'])
+@app.route("/catalog/addProduct", methods=['GET', 'POST'])
 def addProduct():
     if 'username' not in login_session:
         return redirect('/login')
@@ -176,10 +187,10 @@ def addProduct():
         newProductDescription = request.form['newPDescription']
         user_id = login_session['user_id']
         print(user_id)
-        Product_0 = Product(user_id = user_id,
-                            pname = newProductName,
-                            pdescription = newProductDescription,
-                            pc = newCompanyName)
+        Product_0 = Product(user_id=user_id,
+                            pname=newProductName,
+                            pdescription=newProductDescription,
+                            pc=newCompanyName)
         session.add(Product_0)
         session.commit()
         return redirect(url_for('index'))
@@ -187,59 +198,70 @@ def addProduct():
         company = session.query(Company).all()
         return render_template("addProduct.html", company=company)
 
+
 @app.route("/catalog/<com>/items")
 def showCompany(com):
     company = session.query(Company).all()
     var = session.query(Company).filter_by(cname=com).first()
     product = session.query(Product).filter_by(pc=var.id).all()
     if 'username' not in login_session:
-        return render_template('publicShowCompany.html',company=company, product=product,name=com,count=len(product))
+        return render_template('publicShowCompany.html',
+                               company=company, product=product,
+                               name=com, count=len(product))
     else:
-        return render_template('showCompany.html',company=company, product=product,name=com,count=len(product))
+        return render_template('showCompany.html', company=company,
+                               product=product, name=com,
+                               count=len(product))
+
 
 @app.route("/catalog/<cname>/<pname>")
-def showProduct(cname,pname):
-    product = session.query(Product).filter_by(pname = pname).all()
+def showProduct(cname, pname):
+    product = session.query(Product).filter_by(pname=pname).all()
     del cname, pname
     if 'username' not in login_session:
-        return render_template('publicShowProduct.html',product=product)
+        return render_template('publicShowProduct.html', product=product)
     else:
-        return render_template('showProduct.html',product=product)
+        return render_template('showProduct.html', product=product)
+
 
 @app.route("/catalog/<pname>_<pid>/Delete")
-def deleteProduct(pname,pid):
+def deleteProduct(pname, pid):
     if 'username' not in login_session:
         return redirect('/login')
     else:
         del pname
-        product = session.query(Product).filter_by(id = pid).one()
-        user = session.query(User).filter_by(email=login_session['email']).one()
+        product = session.query(Product).filter_by(id=pid).one()
+        user = session.query(User).filter_by(
+            email=login_session['email']).one()
         if product.user_id == user.id:
             session.delete(product)
             session.commit()
             flash("Item Deleted!!!")
             return redirect(url_for('index'))
         else:
-            return '''<h1>Sorry %s you are not authorised to delete this Product.
-            </h1><h2>Note: You can only perform this action on the Products you have
-            added.</h2>''' % login_session['username']
+            return '''<h1>Sorry %s you are not authorised to delete this
+            Product.</h1><h2>Note: You can only perform this action on the
+            Products you have added.</h2>''' % login_session['username']
 
-@app.route("/catalog/<pname>_<pid>/Edit", methods=['GET','POST'])
-def editProduct(pname,pid):
+
+@app.route("/catalog/<pname>_<pid>/Edit", methods=['GET', 'POST'])
+def editProduct(pname, pid):
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'GET':
-        product = session.query(Product).filter_by(id = pid).all()
-        user = session.query(User).filter_by(email=login_session['email']).one()
+        product = session.query(Product).filter_by(id=pid).all()
+        user = session.query(User).filter_by(
+            email=login_session['email']).one()
         for i in product:
             if i.user_id == user.id:
-                return render_template('editProduct.html',product=product)
+                return render_template('editProduct.html', product=product)
             else:
-                return '''<h1>Sorry %s you are not authorised to edit the details of this Product.
-                </h1><h2>Note: You can only perform this action only on the Products you have
-                added.</h2>''' % login_session['username']
+                return '''<h1>Sorry %s you are not authorised to edit the
+                          details of this Product.</h1><h2>Note: You can only
+                          perform this action only on the Products you have
+                          added.</h2>''' % login_session['username']
     else:
-        product = session.query(Product).filter_by(id = pid).one()
+        product = session.query(Product).filter_by(id=pid).one()
         ProductName = request.form['editedPName']
         ProductDescription = request.form['editedPDescription']
         ProductPC = product.pc
@@ -255,14 +277,18 @@ def editProduct(pname,pid):
         flash("Item Edited!!!")
         return redirect(url_for('index'))
 
+
 @app.route("/json")
 def showJSON():
     company = session.query(Company).all()
     product = session.query(Product).all()
-    return jsonify(Company=[i.serialize for i in company], Product=[i.serialize for i in product])
+    user = session.query(User).all()
+    return jsonify(User=[i.serialize for i in user],
+                   Company=[i.serialize for i in company],
+                   Product=[i.serialize for i in product])
+
 
 # User Helper Functions ie createUser, getUserInfo, getUserID
-
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])

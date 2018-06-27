@@ -25,7 +25,6 @@
                 {% for c in company %}
                 <a href="{{url_for('showCompany',com=c.cname)}}">{{ c.cname }}</a><br>
                 {% endfor %}<br>
-                <a href="{{url_for('showJSON')}}">JSON File</a><br>
                 <a href="{{url_for('addProduct')}}">Add Product</a>
             </div>
             <div class="flex">

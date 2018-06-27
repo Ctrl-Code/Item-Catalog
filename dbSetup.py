@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = 'user'
 
@@ -12,6 +13,16 @@ class User(Base):
     name = Column(String(50), nullable=False)
     email = Column(String(50), nullable=False)
     picture = Column(String(250))
+
+    @property
+    def serialize(self):
+        return {
+            'Id': self.id,
+            'Name': self.name,
+            'Email': self.email,
+            'Picture': self.picture
+        }
+
 
 class Company(Base):
     __tablename__ = 'comp'
