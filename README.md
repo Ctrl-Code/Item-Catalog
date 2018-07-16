@@ -65,15 +65,15 @@
   - >Create a user named 'abc' in 'psql' or 'postgresql' with superuser and login rights.
     
     ```bash
-    create role abc superuser
+    create role abc superuser;
     ```
     ```bash
-    alter role abc login
+    alter role abc login;
     ```
   
   - >Add password 'cba' to the user 'abc'
     ```bash
-    \password abc
+    \password abc;
     ```
     Type `cba` + `<enter>` twice when prompted.
 

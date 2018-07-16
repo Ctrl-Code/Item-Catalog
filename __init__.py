@@ -19,10 +19,10 @@ import json
 from flask import make_response
 import requests
 
-CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
+#CLIENT_ID = json.loads(
+#   open('client_secrets.json', 'r').read())['web']['client_id']
 
-engine = create_engine('postgresql+psycopg2://abc:cba@localhost/mazak')
+engine = create_engine('postgresql+psycopg2://catalog:cba@localhost/mazak')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -311,8 +311,9 @@ def getUserID(email):
         return None
 
 if __name__ == '__main__':
-    print("Running Personalized Server, exclusively for CTRL-CODE")
+    # print("Running Personalized Server, exclusively for CTRL-CODE")
     # for flashing messages on screen, we are using secret_key
-    app.secret_key = "my_secret_key"
-    app.debug = True
-    app.run(host='0.0.0.0', port=8001)
+    # app.secret_key = "my_secret_key"
+    # app.debug = True
+    # app.run(host='0.0.0.0', port=8001)
+    app.run()

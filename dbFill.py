@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dbSetup import Base, Company, Product, User
 
-engine = create_engine('postgresql+psycopg2://abc:cba@localhost/mazak')
+engine = create_engine('postgresql+psycopg2://catalog:cba@localhost/mazak')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()

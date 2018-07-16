@@ -61,5 +61,5 @@ class Product(Base):
         }
 
 
-engine = create_engine('postgresql+psycopg2://abc:cba@localhost/mazak')
+engine = create_engine('postgresql+psycopg2://catalog:cba@localhost/mazak')
 Base.metadata.create_all(engine)
